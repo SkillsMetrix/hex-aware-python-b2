@@ -1,34 +1,38 @@
-hexaware_employees=[]
-i=0
-while i < 5:
-    name= input(f"Enter employee names (type 'skip' to skip and 'stop; to end the loop)").strip()
-    if name.lower() =='skip':
-        print('Skipping... \n')
-        continue
-    if name.lower() =='stop':
-        print('Stopping the loop... \n')
-        break
-    
-    while True:
-        age_input= input('Enter user age: ').strip()
-        if age_input.isdigit():
-            age= int(age_input)
-            break
+students={}
+
+while True:
+    print("\n ======= Student App Manager======")
+    print("1, Add new Student")
+    print("2, Add MArks for an existing student")
+    print("3, View All students")
+    print("4, calculate avg marks of the student")
+    print("5, Exit")
+
+    user_choice= input("Enter your choice: ")
+    if user_choice == "1":
+        name= input('Enter Student Name ')
+        if name not in students:
+            students[name]=[]
+            print(f" Student {name} is added")
         else:
-            print("Enter Valid Age")
+            print(f" Student {name} already exist")
     
-    city= input("Enter City: ").strip()
-
-    # dict
-    employee={
-        "name": name,
-        "age": age,
-        "city": city
-    }
-    hexaware_employees.append(employee)
-    i +=1
-
-print('\n Details of the Employees')
-for index,emp in enumerate(hexaware_employees, start=1):
-
-    print(f"{index}. UserName: {emp['name']}, Age: {emp['age']} , City: {emp['city']}")
+    elif user_choice == "2":
+        name= input('Enter Student Name ')
+        if name in students:
+            mark= input("enter student mark ")
+            if mark.isdigit():
+                students[name].append(int(mark))
+                print(f"Mark {mark} added for {name}")
+    elif user_choice == '3':
+        if students:
+            print("\n Student Marks and Name")
+            for student,marks in students.items():
+                print(f" {student} : {marks}")
+        else:
+            print("No Student found")
+    elif user_choice == '5':
+        print("Exit called")
+        break
+    else:
+        print("Invalid Input")
