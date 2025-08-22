@@ -31,6 +31,17 @@ while True:
                 print(f" {student} : {marks}")
         else:
             print("No Student found")
+     elif choice == "4":
+       
+        name = input("Enter student name: ")
+        if name in students:
+            if students[name]:  
+                avg = sum(students[name]) / len(students[name])
+                print(f"Average marks for {name}: {avg:.2f}")
+            else:
+                print(f"No marks found for {name}.")
+        else:
+            print(f"Student '{name}' not found.")
     elif user_choice == '5':
         print("Exit called")
         break
