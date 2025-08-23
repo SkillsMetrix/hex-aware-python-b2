@@ -1,4 +1,29 @@
+# global dictionary
 students={}
+
+def add_student():
+    """ Add a new student to the dictionary"""
+    name= input("enter student name: ").strip()
+    if not name:
+        print("name cannot be empty .")
+        return
+    if name in students:
+         print(f" Student {name} already exist")
+    else:
+        students[name]=[]
+        print(f" Student {name} is added successfully")
+        
+def view_students():
+    """ Display all the students""" 
+    if not students:
+        print("No Student found") 
+        return   
+    print("\n Student Marks and Name")
+    for student,marks in students.items():
+        marks_display = ", ".join(map(str,marks)) if marks else "No marks yet"
+        print(f" {student} : {marks_display}")
+        
+            
 
 while True:
     print("\n ======= Student App Manager======")
@@ -10,12 +35,7 @@ while True:
 
     user_choice= input("Enter your choice: ")
     if user_choice == "1":
-        name= input('Enter Student Name ')
-        if name not in students:
-            students[name]=[]
-            print(f" Student {name} is added")
-        else:
-            print(f" Student {name} already exist")
+      add_student()
     
     elif user_choice == "2":
         name= input('Enter Student Name ')
@@ -25,23 +45,7 @@ while True:
                 students[name].append(int(mark))
                 print(f"Mark {mark} added for {name}")
     elif user_choice == '3':
-        if students:
-            print("\n Student Marks and Name")
-            for student,marks in students.items():
-                print(f" {student} : {marks}")
-        else:
-            print("No Student found")
-     elif choice == "4":
-       
-        name = input("Enter student name: ")
-        if name in students:
-            if students[name]:  
-                avg = sum(students[name]) / len(students[name])
-                print(f"Average marks for {name}: {avg:.2f}")
-            else:
-                print(f"No marks found for {name}.")
-        else:
-            print(f"Student '{name}' not found.")
+        view_students()
     elif user_choice == '5':
         print("Exit called")
         break
