@@ -1,27 +1,80 @@
+# global dictionary
+class StudentManager:
 
-class Employee:
-     def __init__(self,name,email,salary):
-        self.uname=name
-        self.uemail=email
-        self.usalary= salary
+    def __init__(self):
+        self.students={}
 
-     @property
-     def email(self):
-         return f"{self.uemail.lower()}@hexaware.com"
-     @property
-     def name(self):
-         return f"{self.uname}"
-     @property
-     def salary(self):
-         return f"{self.usalary}"
-     
-     @salary.setter
-     def salary(self,value):
-         if value < 0:
-            raise ValueError("Salary must be no negative")
-         self.usalary=value
+    def add_student(self):
+        """ Add a new student to the dictionary"""
+        name= input("enter student name: ").strip()
+        if not name:
+            print("name cannot be empty .")
+            return
+        if name in self.students:
+         print(f" Student {name} already exist")
+        else:
+            self.students[name]=[]
+            print(f" Student {name} is added successfully")
+        
+    def view_students(self):
+        """ Display all the students""" 
+        if not self.students:
+            print("No Student found") 
+            return   
+        print("\n Student Marks and Name")
+        for student,marks in self.students.items():
+            marks_display = ", ".join(map(str,marks)) if marks else "No marks yet"
+            print(f" {student} : {marks_display}")
+        
+    def add_marks(self):
+        """Adding the Marks to the student"""  
+        name= input('Enter Student Name ').strip()
+        if name not in self.students:
+            print("student name not found, add the student first")
+            return
+        try:
+            mark= float(input('Enter mark(numeric)'))
+            if mark < 0:
+                print('Enter non negative value')
+                return
+            self.students[name].append(mark)
+            print('added')
+        except ValueError:
+            print("invalid input ,please enater number")
+       
+    def calculate_avg(self):
+        """ calculating  student avg marks"""
+        name= input("Enter Student Name: ").strip()
+        if name not in self.students:
+            print('student not found')
+            return
+        if not self.students[name]:
+            print('no marks found for the said student ')
+            return
+        avg= sum(self.students[name])/len(self.students[name])
+        print(f" Average marks for {self.name}: {self.avg:.2f}")
 
-emp= Employee('user1','user@mail.com',12345)
-print(emp.email)
-emp.salary=-1
-print(emp.salary)
+    def menu(self):
+        while True:
+            print("\n ======= Student App Manager======")
+            print("1, Add new Student")
+            print("2, Add MArks for an existing student")
+            print("3, View All students")
+            print("4, calculate avg marks of the student")
+            print("5, Exit")
+
+            user_choice= input("Enter your choice: ")
+
+            if user_choice == "1":
+                self.add_student()
+            elif user_choice == "2":
+                self.add_marks()
+            elif user_choice == '3':
+                self.view_students()
+            elif user_choice == '4':
+                self.calculate_avg()
+            elif user_choice == '5':
+                print("Exit called")
+                break
+            else:
+                print("Invalid Input")
