@@ -22,3 +22,14 @@ user_summary=[f"{emp['name']} from {emp['city']} is {emp['age']} years old" for 
 
 for data in user_summary:
     print(data)
+
+
+---
+
+shopcart = [
+    {"item": "Laptop", "price": 60000, "qty": 1},
+    {"item": "Mouse", "price": 800, "qty": 2},
+    {"item": "Keyboard", "price": 1500, "qty": 1},
+    {"item": "Monitor", "price": 12000, "qty": 2},
+    {"item": "USB Cable", "price": 300, "qty": 3}
+]
