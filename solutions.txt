@@ -1,40 +1,27 @@
-shopcart = [
-    {"item": "Laptop", "price": 60000, "qty": 1},
-    {"item": "Mouse", "price": 800, "qty": 2},
-    {"item": "Keyboard", "price": 1500, "qty": 1},
-    {"item": "Monitor", "price": 12000, "qty": 2},
-    {"item": "USB Cable", "price": 300, "qty": 3}
-]
 
-def get_items(cart):
-    return [prod["item"] for prod in cart]
-#apply discount on all the items
-def apply_discount(cart,discount=0.1):
-    return [{**prod , "discounted_price":prod["price"] * (1- discount)} for prod in cart]
+class Employee:
+     def __init__(self,name,email,salary):
+        self.uname=name
+        self.uemail=email
+        self.usalary= salary
 
-def filter_expensive(cart,threshold=1000):
-    return [prod for prod in cart if prod['price'] > threshold]
+     @property
+     def email(self):
+         return f"{self.uemail.lower()}@hexaware.com"
+     @property
+     def name(self):
+         return f"{self.uname}"
+     @property
+     def salary(self):
+         return f"{self.usalary}"
+     
+     @salary.setter
+     def salary(self,value):
+         if value < 0:
+            raise ValueError("Salary must be no negative")
+         self.usalary=value
 
-# calculate total price of all the items
-def items_total(cart):
-    return [prod["price"] * prod["qty"] for prod in cart]
-
-# print bulk items (qty>1)
-def bulk_items(cart):
-    return {prod['item']: prod['qty'] for prod in cart if prod["qty"] >1}
-# apply tax to all the items
-
-def apply_tax(cart,taxrate=0.18):
-    return [{**prod, "final_price": prod["price"] * (1+taxrate)} for prod in cart]
-
-# search item by keyword
-def search_item(cart,keyword):
-    return [prod for prod in cart if keyword.lower() in prod['item'].lower()]
-# grand total of entire cart
-
-
-#print("get All Items  ",get_items(shopcart))
-#print("Discounted Price  ",apply_discount(shopcart))
-#print("Bulk Items ",bulk_items(shopcart))
-#print(apply_tax(shopcart))
-print(search_item(shopcart,"laptop"))
+emp= Employee('user1','user@mail.com',12345)
+print(emp.email)
+emp.salary=-1
+print(emp.salary)
