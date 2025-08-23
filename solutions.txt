@@ -23,7 +23,33 @@ def view_students():
         marks_display = ", ".join(map(str,marks)) if marks else "No marks yet"
         print(f" {student} : {marks_display}")
         
-            
+def add_marks():
+    """Adding the Marks to the student"""  
+    name= input('Enter Student Name ').strip()
+    if name not in students:
+            print("student name not found, add the student first")
+            return
+    try:
+        mark= float(input('Enter mark(numeric)'))
+        if mark < 0:
+            print('Enter non negative value')
+            return
+        students[name].append(mark)
+        print('added')
+    except ValueError:
+        print("invalid input ,please enater number")
+       
+def calculate_avg():
+    """ calculating  student avg marks"""
+    name= input("Enter Student Name: ").strip()
+    if name not in students:
+        print('student not found')
+        return
+    if not students[name]:
+        print('no marks found for the said student ')
+        return
+    avg= sum(students[name])/len(students[name])
+    print(f" Average marks for {name}: {avg:.2f}")
 
 while True:
     print("\n ======= Student App Manager======")
@@ -34,18 +60,15 @@ while True:
     print("5, Exit")
 
     user_choice= input("Enter your choice: ")
+
     if user_choice == "1":
       add_student()
-    
     elif user_choice == "2":
-        name= input('Enter Student Name ')
-        if name in students:
-            mark= input("enter student mark ")
-            if mark.isdigit():
-                students[name].append(int(mark))
-                print(f"Mark {mark} added for {name}")
+      add_marks()
     elif user_choice == '3':
         view_students()
+    elif user_choice == '4':
+        calculate_avg()
     elif user_choice == '5':
         print("Exit called")
         break
