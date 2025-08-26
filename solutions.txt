@@ -3,11 +3,11 @@ employees = [
     {"id": 101, "name": "Alice", "age": 28, "salary": 50000, "department": "HR"},
     {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
     {"id": 103, "name": "Charlie", "age": 25, "salary": 55000, "department": "Finance"},
-    {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "IT"},
-    {"id": 105, "name": "Eva", "age": 30, "salary": 65000, "department": "HR"},
+    {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "HR"},
+    {"id": 105, "name": "Eva", "age": 34, "salary": 65000, "department": "HR"},
 ]
 
-# calculate bonus
+""" # calculate bonus
 bonus= lambda emp: emp['salary'] *0.10
 print(bonus(employees[0]))
 
@@ -27,3 +27,47 @@ for data in it_employee:
 # reduce to get aggregate data
 total_salary= reduce(lambda acc,emp:acc+ emp['salary'],employees,0)
 print(f"Total Salary : {total_salary}")
+ """
+# find the avg salary of emp over 30 in HR
+ 
+ # step-1  filter emp over 30 in hr
+
+filtered= list(filter(lambda emp: emp['age'] > 30 and emp['department']== 'HR',employees))
+
+# step-2 extract salary
+salaries= list(map(lambda emp: emp['salary'],filtered))
+print(salaries)
+
+# step-3 calculate avg using reduce
+# reduce ( function, iterable , intializer)
+# function takes 2 args ( acc, current value)
+
+if salaries:
+    total= reduce(lambda acc,s: acc+ s,salaries)
+    avg= total/len(salaries)
+    print(avg)
+
+# task (filter all the employees  whose new salary (after 5% inc) is above 60k)
+# hint ->use filter and map
+
+updated_salaries= list(map(lambda emp: {** emp,"salary":emp["salary"] *1.05},employees))
+
+high_paid= list(filter(lambda emp: emp['salary'] > 60000,updated_salaries))
+
+print("printing updated salaries")
+for emp in high_paid:
+    print(f"{emp['name']} => ${emp['salary']}")
+
+# finding the highest paid employee
+highest_paid=reduce(
+    lambda acc,emp:emp if emp['salary']> acc['salary'] else acc,employees
+)
+print(highest_paid)
+
+# grouping total salary by department
+salary_by_dept=reduce(
+    lambda acc,emp: {**acc,emp['department']: acc.get(emp['department'],0)+emp['salary']},employees,{}
+)
+print("Total salary by department")
+for dept,total in salary_by_dept.items():
+    print(f"{dept} : $ {total}")
