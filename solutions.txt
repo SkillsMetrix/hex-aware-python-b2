@@ -1,3 +1,4 @@
+from functools import reduce
 employees = [
     {"id": 101, "name": "Alice", "age": 28, "salary": 50000, "department": "HR"},
     {"id": 102, "name": "Bob", "age": 34, "salary": 60000, "department": "IT"},
@@ -5,3 +6,24 @@ employees = [
     {"id": 104, "name": "David", "age": 45, "salary": 70000, "department": "IT"},
     {"id": 105, "name": "Eva", "age": 30, "salary": 65000, "department": "HR"},
 ]
+
+# calculate bonus
+bonus= lambda emp: emp['salary'] *0.10
+print(bonus(employees[0]))
+
+# increase salary of all by 5%  using map
+updated_salaries= list(map(lambda emp: {** emp,"salary":emp["salary"] *1.05},employees))
+
+for emp in updated_salaries:
+    print(f"{emp['name']} new salary: {emp['salary']}")
+
+# filter get employee in IT department
+
+it_employee= list(filter(lambda emp: emp['department'] =='IT',employees))
+
+for data in it_employee:
+    print(f" {data['name']} works in IT")
+
+# reduce to get aggregate data
+total_salary= reduce(lambda acc,emp:acc+ emp['salary'],employees,0)
+print(f"Total Salary : {total_salary}")
