@@ -1,30 +1,18 @@
-from AllExceptions import *
-class Employee:
-    def __init__(self,name,salary,age):
+import numpy as np
 
-        if not name.strip():
-            raise EmptyNameError("Employee Name is empty")
-        if age<18:
-            raise InvalidAgeError("Invalid Age ,muste be > 18")
-        if salary <0:
-            raise NegativeSalaryError("Salary cant not be negative")
-        
-        self.name=name
-        self.salary=salary
-        self.age=age
+inventory=np.array([
+    (101,'Laptop', 7500.0,10),
+    (102,'Headphones', 1500.0,50),
+    (103,'Mouse', 500.0,100),
+    (104,'Monitor', 1200.0,20),
+    (105,'keyboard', 1000.0,80),
+],dtype=[('id','i4'),('name','U20'),('price','f4'),('stock','i4')])
 
-    def __str__(self):
-        return f" Employee Name: {self.name} , Age: {self.age}, Salary: {self.salary}"
-    
 
-try:
-    empData= Employee("John",60000,17)
-    print(empData)
+cart=np.array([
+    (101,1),(102,2),(103,3)
+],dtype=[('product_id','i4'),('quantity','i4')])
 
-except EmptyNameError as e:
-    print("Name is empty ",e)
-except NegativeSalaryError as e:
-    print("salary negative ",e)
-except InvalidAgeError as e:
-    print("Age is wrong ",e)        
-        
+for item in cart:
+    product=inventory[inventory['id'] == item['product_id']][0]
+    print(f"{product['name']} * {item['quantity']} @ {product['price']} each")
