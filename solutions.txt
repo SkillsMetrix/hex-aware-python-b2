@@ -20,3 +20,18 @@ def create_table():
         ''')
     conn.commit()
     conn.close
+
+
+
+---
+
+
+
+from db import (create_table)
+from employee import Employee
+
+def main():
+    create_table()
+
+if __name__ == '__main__':
+    main()
