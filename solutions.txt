@@ -1,40 +1,22 @@
-import numpy as np
+import sqlite3
+from employee import Employee
 
-inventory=np.array([
-    (101,'Laptop', 7500.0,10),
-    (102,'Headphones', 1500.0,50),
-    (103,'Mouse', 500.0,100),
-    (104,'Monitor', 1200.0,20),
-    (105,'keyboard', 1000.0,80),
-],dtype=[('id','i4'),('name','U20'),('price','f4'),('stock','i4')])
+DB_NAME="employee.db"
 
+def connect_db():
+    conn= sqlite3.connect(DB_NAME)
+    return conn
 
-cart=np.array([
-    (101,1),(102,2),(103,3)
-],dtype=[('product_id','i4'),('quantity','i4')])
-
-for item in cart:
-    product=inventory[inventory['id'] == item['product_id']][0]
-    print(f"{product['name']} * {item['quantity']} @ {product['price']} each")
-
-# total Cart Value
-
-total=0.0 
-for item in cart:
-    product=inventory[inventory['id'] == item['product_id']][0]
-    total += product['price'] * item['quantity']
-print(f"Total Cart Value: {total}")
-
-# update the stock after purchase
-for item in cart:
-    idx= np.where(inventory['id'] == item['product_id'])[0][0]
-    inventory['stock'][idx] -= item['quantity']
-print(f"Inventory after Purchase: {inventory[['name','stock']]}")
-
-# find low stock item
-low_stock= inventory[inventory['stock'] <30]
-print(f"Low Stock: {low_stock}")
-
-# print total inventory value
-total_value= np.sum(inventory['price'] * inventory['stock'])
-print(total_value)
+def create_table():
+    conn= connect_db()
+    cursor= conn.cursor()
+    cursor.execute('''
+        create table if not exists employee(
+        emp_id INTEGER PRIMARY_KEY,
+        name TEXT NOT NULL,
+        department TEXT NOT NULL,
+        salary REAL NOT NULL
+        )
+        ''')
+    conn.commit()
+    conn.close
