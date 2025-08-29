@@ -1,37 +1,33 @@
-import sqlite3
+
+from db import (create_table,insert_employee)
 from employee import Employee
 
-DB_NAME="employee.db"
-
-def connect_db():
-    conn= sqlite3.connect(DB_NAME)
-    return conn
-
-def create_table():
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('''
-        create table if not exists employee(
-        emp_id INTEGER PRIMARY_KEY,
-        name TEXT NOT NULL,
-        department TEXT NOT NULL,
-        salary REAL NOT NULL
-        )
-        ''')
-    conn.commit()
-    conn.close
-
-
-
----
-
-
-
-from db import (create_table)
-from employee import Employee
+def display_menu():
+    print("\n------ Employee DB App------")
+    print("1---- Add Employee------")
+    print("6---- Exit App------")
 
 def main():
     create_table()
+
+    while True:
+        display_menu()
+        choice= input("Enter Choice to Perform Operations:  ")
+        if choice == '1':
+            emp_id= int(input('Enter Employee ID: '))
+            name=input('Enter Employee Name: ')
+            dept=input('Enter Department department: ')
+            salary= int(input('Enter Employee Salary: '))
+            emp= Employee(emp_id,name,dept,salary)
+            insert_employee(emp)
+            print('Employee Added')
+        
+        elif choice =='6':
+            print('Exiting the App')
+            break
+        else:
+            print('Wrong Choice')
+
 
 if __name__ == '__main__':
     main()
