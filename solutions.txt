@@ -1,8 +1,21 @@
 
 from db import (create_table,insert_employee,load_employees,update_emp,search_emp,delete_emp)
 from employee import Employee
+import logging
 import sqlite3
 from exception import EmployeeNotFoundError,InvalidInputError,DatabaseOperationError
+
+# configuring Logs
+
+logging.basicConfig(
+    level=logging.INFO,
+    format= "%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("employee_app.log",mode="a"),
+        logging.StreamHandler()
+    ]
+)
+logger= logging.getLogger(__name__)
 
 def display_menu():
     print("\n------ Employee DB App------")
@@ -16,6 +29,7 @@ def display_menu():
 def main():
     try:
         create_table()
+        logger.info("Database Table Created")
 
     except sqlite3.Error as e:
         raise DatabaseOperationError("Error while creating table")
@@ -33,6 +47,7 @@ def main():
                     emp= Employee(emp_id,name,dept,salary)
                     insert_employee(emp)
                     print('Employee Added')
+                    logger.info(f"Employee {emp_id} added into DB")
                 except ValueError:
                     raise InvalidInputError("ID and salary must be numeric")
                 except sqlite3.Error as e:
@@ -46,6 +61,7 @@ def main():
 
                     for emp in employees:
                      print(emp)
+                     logger.info(f"Loaded {len(employees)} employees from DB")
                 except sqlite3.Error as e:
                     raise DatabaseOperationError("Load Operation Failed")
         
@@ -106,6 +122,6 @@ def main():
             print('invalid input')
         except DatabaseOperationError as e:
             print('Database error')
-            
+
 if __name__ == '__main__':
     main()
