@@ -1,86 +1,8 @@
-import sqlite3
-from employee import Employee
-
-DB_NAME="employee.db"
-
-def connect_db():
-    conn= sqlite3.connect(DB_NAME)
-    return conn
-
-def create_table():
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('''
-        create table if not exists employee(
-        emp_id INTEGER PRIMARY_KEY,
-        name TEXT NOT NULL,
-        department TEXT NOT NULL,
-        salary REAL NOT NULL
-        )
-        ''')
-    conn.commit()
-    conn.close
-
-def insert_employee(emp:Employee):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('insert into employee(emp_id,name,department,salary) values(?,?,?,?)',
-    (emp.emp_id,emp.name,emp.department,emp.salary))
-    conn.commit()
-    conn.close
-
-def load_employees():
-     conn= connect_db()
-     cursor= conn.cursor()
-     cursor.execute("select * from employee")
-     rows= cursor.fetchall()
-     conn.close()
-     return [Employee(*row) for row in rows]
-
-def search_emp(empid):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('select * from employee where emp_id=?',(empid,))
-    row= cursor.fetchone()
-    conn.close
-    return Employee(*row) if row else None
-
-def delete_emp(empid):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('delete from employee where emp_id=?',(empid,))
-    conn.commit()
-    conn.close
-
-def update_emp(emp:Employee):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('update employee set name=?,department=?,salary=? where emp_id=?',
-                   (emp.name,emp.department,emp.salary,emp.emp_id)
-                   )
-    conn.commit()
-    conn.close
-
-
------
-
-class Employee:
-
-    def __init__(self,emp_id,name,department,salary):
-
-        self.emp_id=emp_id
-        self.name=name
-        self.department=department
-        self.salary=salary
-    
-    def __str__(self):
-        return f"ID {self.emp_id}, Name: {self.name}, department: {self.department}, Salary:{self.salary}"
-
----
-
 
 from db import (create_table,insert_employee,load_employees,update_emp,search_emp,delete_emp)
 from employee import Employee
+import sqlite3
+from exception import EmployeeNotFoundError,InvalidInputError,DatabaseOperationError
 
 def display_menu():
     print("\n------ Employee DB App------")
@@ -92,63 +14,98 @@ def display_menu():
     print("6---- Exit App------")
 
 def main():
-    create_table()
+    try:
+        create_table()
+
+    except sqlite3.Error as e:
+        raise DatabaseOperationError("Error while creating table")
 
     while True:
-        display_menu()
-        choice= input("Enter Choice to Perform Operations:  ")
-        if choice == '1':
-            emp_id= int(input('Enter Employee ID: '))
-            name=input('Enter Employee Name: ')
-            dept=input('Enter Department department: ')
-            salary= int(input('Enter Employee Salary: '))
-            emp= Employee(emp_id,name,dept,salary)
-            insert_employee(emp)
-            print('Employee Added')
+        try:
+            display_menu()
+            choice= input("Enter Choice to Perform Operations:  ")
+            if choice == '1':
+                try:
+                    emp_id= int(input('Enter Employee ID: '))
+                    name=input('Enter Employee Name: ')
+                    dept=input('Enter Department department: ')
+                    salary= int(input('Enter Employee Salary: '))
+                    emp= Employee(emp_id,name,dept,salary)
+                    insert_employee(emp)
+                    print('Employee Added')
+                except ValueError:
+                    raise InvalidInputError("ID and salary must be numeric")
+                except sqlite3.Error as e:
+                    raise DatabaseOperationError("Insert Operation Failed")
         
-        elif choice =='2':
-            employees= load_employees()
-            if not employees:
-                print('No employee found')
-            else:
-                for emp in employees:
+            elif choice =='2':
+                try:
+                    employees= load_employees()
+                    if not employees:
+                        raise EmployeeNotFoundError("No Employee Found")
+
+                    for emp in employees:
+                     print(emp)
+                except sqlite3.Error as e:
+                    raise DatabaseOperationError("Load Operation Failed")
+        
+            elif choice =='3':
+                try:
+                    emp_id= int(input('Enter Employee ID to Search'))
+                    emp= search_emp(emp_id)
+                    if not emp:
+                        raise EmployeeNotFoundError("Employee ID Not found")
                     print(emp)
+                except ValueError:
+                    raise InvalidInputError("ID must be numeric")
+                except sqlite3.Error as e:
+                    raise DatabaseOperationError("Fetch Operation Failed")
+          
         
-        elif choice =='3':
-            emp_id= int(input('Enter Employee ID to Search'))
-            emp= search_emp(emp_id)
-            if emp:
-                print(emp)
+            elif choice =='4':
+                try:
+                    emp_id= int(input('Enter Employee ID to Search'))
+                    delete_emp(emp_id)
+                    print('Employee deleted')
+                except ValueError:
+                    raise InvalidInputError("ID must be numeric")
+                except sqlite3.Error as e:
+                    raise DatabaseOperationError("delete Operation Failed")
+        
+            elif choice =='5':
+                try:
+                    emp_id= int(input('Enter Employee ID to update'))
+                    emp= search_emp(emp_id)
+                    if not emp:
+                         raise EmployeeNotFoundError("Employee ID Not found")
+                        
+            
+                    name=input(f'Enter new Employee Name: ({emp.name}) :)') or emp.name
+
+                    dept=input(f'Enter new Department : ({emp.department}) :)') or emp.department
+                    salary_input= int(input(f"Enter new salary ({emp.salary})"))
+                    salary= float(salary_input) if salary_input else emp.salary
+                    update_emp(Employee(emp_id,name,dept,salary))
+                    print("Employee Updated")
+                
+                except ValueError:
+                    raise InvalidInputError("Salary must be numeric")
+                except sqlite3.Error as e:
+                    raise DatabaseOperationError("Update Operation Failed")
+
+        
+            elif choice =='6':
+                print('Exiting the App')
+                break
             else:
-                print('Employee Not Found')
-        
-        elif choice =='4':
-            emp_id= int(input('Enter Employee ID to Search'))
-            delete_emp(emp_id)
-            print('Employee deleted')
-        
-        elif choice =='5':
-            emp_id= int(input('Enter Employee ID to update'))
-            emp= search_emp(emp_id)
-            if not emp:
-                 print('Employee Not Found')
-            else:
-                name=input(f'Enter new Employee Name: ({emp.name}) :)') or emp.name
+                print('Wrong Choice')
 
-                dept=input(f'Enter new Department : ({emp.department}) :)') or emp.department
-                salary_input= int(input(f"Enter new salary ({emp.salary})"))
-                salary= float(salary_input) if salary_input else emp.salary
-                update_emp(Employee(emp_id,name,dept,salary))
-                print("Employee Updated")
-               
-
-        
-        elif choice =='6':
-            print('Exiting the App')
-            break
-        else:
-            print('Wrong Choice')
-
-
+        except EmployeeNotFoundError as e:
+            print('employee not found')
+        except InvalidInputError as e:
+            print('invalid input')
+        except DatabaseOperationError as e:
+            print('Database error')
+            
 if __name__ == '__main__':
     main()
