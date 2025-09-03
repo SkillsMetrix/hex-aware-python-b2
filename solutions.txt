@@ -70,8 +70,12 @@ def main():
                     emp_id= int(input('Enter Employee ID to Search'))
                     emp= search_emp(emp_id)
                     if not emp:
+                        logger.warning(f"Employee {emp_id} not found")
                         raise EmployeeNotFoundError("Employee ID Not found")
+                       
                     print(emp)
+                   
+                    
                 except ValueError:
                     raise InvalidInputError("ID must be numeric")
                 except sqlite3.Error as e:
@@ -107,7 +111,7 @@ def main():
                 except ValueError:
                     raise InvalidInputError("Salary must be numeric")
                 except sqlite3.Error as e:
-                    raise DatabaseOperationError("Update Operation Failed")
+                    logger.error(f"Database Operations error")
 
         
             elif choice =='6':
