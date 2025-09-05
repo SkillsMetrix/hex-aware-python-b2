@@ -1,0 +1,61 @@
+# Student data
+students = pd.DataFrame({
+    'StudentID': [1, 2, 3, 4, 5],
+    'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'],
+    'Department': ['CS', 'Math', 'CS', 'Physics', 'Math'],
+    'Year': [2, 1, 3, 2, 1]
+})
+
+# Exam data
+exams = pd.DataFrame({
+    'ExamID': [101, 102, 103, 104, 105, 106, 107, 108],
+    'StudentID': [1, 2, 1, 3, 4, 5, 3, 2],
+    'Subject': ['Math', 'Math', 'CS', 'CS', 'Physics', 'Math', 'Physics', 'CS'],
+    'Score': [88, 75, 92, 85, 90, 60, 70, 80]
+})
+-----
+
+Average Score Per Student
+Find the average score of each student across all exams.
+
+Top Scorer in Each Subject
+Identify the student with the highest score in each subject.
+
+Exam Count Per Student
+Count how many exams each student has attempted.
+
+High Scorers
+List the students who scored more than 85 in any exam.
+
+Department-Wise Average Score
+Calculate the average exam score of students for each department.
+
+Subject Ranking
+Rank students within each subject based on their scores.
+
+Failed Students
+Find students who scored less than 40 in any subject.
+
+Overall Topper
+Identify the student with the highest average score across all exams.
+
+Department Topper
+Find the top scorer (highest average) from each department.
+
+Subject-Wise Pass Percentage
+For each subject, calculate the percentage of students who scored at least 40.
+
+Multi-Subject High Performer
+Find students who scored above 80 in at least two different subjects.
+
+Lowest Scorer in Each Subject
+Find the student with the lowest score in each subject.
+
+Year-Wise Average Score
+Calculate the average exam score of students grouped by academic year.
+
+Students Without Exams
+Identify if there are any students who haven’t attempted an exam.
+
+Best Performing Department
+Find the department with the highest overall average score.
