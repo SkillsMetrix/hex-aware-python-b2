@@ -59,3 +59,53 @@ Identify if there are any students who haven’t attempted an exam.
 
 Best Performing Department
 Find the department with the highest overall average score.
+
+
+ 
+# 1. Average Score Per Student
+ 
+avg_scores = exams.groupby('StudentID', as_index=False)['Score'].mean().rename(columns={'Score':'AvgScore'})
+sol1 = students.merge(avg_scores, on='StudentID', how='left').fillna({'AvgScore': 0})
+print("\n1) Average Score Per Student")
+print(sol1[['StudentID','Name','AvgScore']].to_string(index=False))
+
+ 
+# 2. Top Scorer in Each Subject
+ 
+idx = exams.groupby('Subject')['Score'].idxmax()
+top_per_subject = exams.loc[idx].merge(students, on='StudentID', how='left')
+print("\n2) Top Scorer in Each Subject")
+print(top_per_subject[['Subject','Name','StudentID','Score']].sort_values('Subject').to_string(index=False))
+
+ 
+# 3. Exam Count Per Student
+ 
+exam_count = exams.groupby('StudentID').size().reset_index(name='ExamCount')
+sol3 = students.merge(exam_count, on='StudentID', how='left').fillna({'ExamCount':0})
+sol3['ExamCount'] = sol3['ExamCount'].astype(int)
+print("\n3) Exam Count Per Student")
+print(sol3[['Name','ExamCount']].to_string(index=False))
+
+ 
+# 4. High Scorers (>85 in any exam)
+ 
+high_scorers = exams[exams['Score'] > 85].merge(students, on='StudentID')
+print("\n4) Students who scored > 85 in any exam")
+print(high_scorers[['Name','Subject','Score']].to_string(index=False))
+
+ 
+# 5. Department-Wise Average Score
+ 
+dept_avg = exams.merge(students, on='StudentID').groupby('Department', as_index=False)['Score'].mean().rename(columns={'Score':'DeptAvgScore'})
+print("\n5) Department-wise Average Score")
+print(dept_avg.to_string(index=False))
+
+ 
+# 6. Subject Ranking (rank within each subject)
+ 
+exams_with_rank = exams.copy()
+exams_with_rank['RankInSubject'] = exams_with_rank.groupby('Subject')['Score'].rank(ascending=False, method='dense')
+ranked = exams_with_rank.merge(students, on='StudentID')
+print("\n6) Subject Ranking (per subject)")
+print(ranked[['Subject','Name','Score','RankInSubject']].sort_values(['Subject','RankInSubject']).to_string(index=False))
+
