@@ -1,6 +1,7 @@
 import pandas as pd
-from openpyxl.styles import PatternFill,Font
+from openpyxl.styles import PatternFill,Font,Alignment
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 employees= pd.DataFrame(
     {
     'EmpID': [101, 102, 103, 104],
@@ -59,3 +60,64 @@ for row in range(2, ws.max_row + 1):
 
 wb.save('HR_Report.xlsx')
 print("Formatting and formulas added using openpyxl.")
+
+
+#=== Avg Salary Per Dept , Bold Headers, Add Background Colors, Auto Adjust column width,Currency format
+
+employeesNew= pd.DataFrame(
+    {
+    'EmpID': [101, 102, 103, 104],
+    'Name': ['Alice', 'Bob', 'Charlie', 'David'],
+    'Dept': ['HR', 'IT', 'Finance','IT'],
+    'Salary': [70000, 80000, 65000, 72000],
+ })
+#Department Summary
+
+dept_summary=employeesNew.groupby('Dept').agg(
+    Total_Employees=('EmpID','count'),
+    Average_Salary=('Salary','mean'),
+    Max_Salary=('Salary','max'),
+    Min_Salary=('Salary','min')
+
+).reset_index()
+
+# write Data to Excel
+with pd.ExcelWriter('multi_sheet.xlsx',engine='openpyxl') as writer:
+     employeesNew.to_excel(writer,sheet_name='EmployeeData',index=False)
+     employeesNew.describe().to_excel(writer,sheet_name='Summary')
+     dept_summary.to_excel(writer,sheet_name='DeptSummary',index=False)
+print('File is written')
+
+# Formatting the Data
+wb= load_workbook('multi_sheet.xlsx')
+ws=wb['DeptSummary']
+
+header_fill = PatternFill(start_color='D9EAD3', end_color='D9EAD3', fill_type='solid')
+
+for cell in ws[1]:   
+    cell.font = Font(bold=True,color='000000')
+    cell.fill = header_fill
+    cell.alignment= Alignment(horizontal='center',vertical='center')
+
+
+# format salary column
+currency_cols=["C","D","E"]
+for col in currency_cols:
+    for row in range(2,ws.max_row +1):
+        ws[f"{col}{row}"].number_format= u'₹#,##0'
+
+# auth adjust column width
+for col in ws.columns:
+    max_length=0
+    column=col[0].column
+    col_letter= get_column_letter(column)
+    for cell in col:
+        try:
+            if cell.value:
+                max_length=max(max_length,len(str(cell.value)))
+        except:
+            pass
+    ws.column_dimensions[col_letter].width=max_length+2
+
+wb.save("multi_sheet.xlsx")
+print('file saved')
