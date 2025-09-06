@@ -37,23 +37,25 @@ with pd.ExcelWriter('HR_Report.xlsx',engine="openpyxl") as writer:
     ).reset_index()
     summary.to_excel(writer,sheet_name='SalarySummary',index=False)
 
-    # perform more advanced features
+     
 
-    wb=load_workbook('HR_Report.xlsx')
-    ws= wb('SalarySummary')
+    # Load workbook and select sheet
+wb = load_workbook('HR_Report.xlsx')
+ws = wb['SalarySummary']
 
-    #bold headers and fill
-    header_fill= PatternFill(start_color='D9EAD3', end_color='D9EAD3', fill_type="solid")
+ 
+header_fill = PatternFill(start_color='D9EAD3', end_color='D9EAD3', fill_type='solid')
 
-    for cell in ws[1]:
-        cell.font=Font(bold=True)
-        cell.fill=header_fill
+for cell in ws[1]:   
+    cell.font = Font(bold=True)
+    cell.fill = header_fill
 
-    
-    # Add a formula in the next column 
-    ws.cell(row=1,column=4).value="10% Raise"
-    for row in range(2,ws.max_row+1):
-        salary_cell=f"C{row}"
-        formula_cell=ws.cell(row=row,column=4)
-        formula_cell.value=f"{salary_cell}*1.1"
-    wb.save("HR_Report.xlsx")
+# Add a formula in the next  
+ws.cell(row=1, column=4).value = "10% Raise"
+for row in range(2, ws.max_row + 1):
+    salary_cell = f"C{row}"
+    formula_cell = ws.cell(row=row, column=4)
+    formula_cell.value = f"={salary_cell}*1.1"
+
+wb.save('HR_Report.xlsx')
+print("Formatting and formulas added using openpyxl.")
