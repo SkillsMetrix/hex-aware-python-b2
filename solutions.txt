@@ -1,215 +1,52 @@
-import sqlite3
-from employee import Employee
-import pandas as pd
-DB_NAME="employee.db"
+Accounts Data
 
-def connect_db():
-    conn= sqlite3.connect(DB_NAME)
-    return conn
+accounts = [
+    [1001, "Ravi Kumar", "Saving", 12500.50, "Delhi", "2020-02-15"],
+    [1002, "Sneha Shah", "Current", 50250.00, "Mumbai", "2019-10-01"],
+    [1003, "Anil Verma", "Saving", 7500.00, "Bangalore", "2021-06-20"],
+    [1004, "Priya Nair", "Saving", 300.00, "Delhi", "2024-01-05"],
+    [1005, "Amit Joshi", "Current", 150000.00, "Chennai", "2018-04-12"],
+    [1006, "Leena Rao", "Saving", 0.00, "Mumbai", "2023-11-30"]
+]
 
-def create_table():
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('''
-        create table if not exists employee(
-        emp_id INTEGER PRIMARY_KEY,
-        name TEXT NOT NULL,
-        department TEXT NOT NULL,
-        salary REAL NOT NULL
-        )
-        ''')
-    conn.commit()
-    conn.close
+accounts_columns = ["AccountID", "Name", "AccountType", "Balance", "Branch", "OpeningDate"]
 
-def insert_employee(emp:Employee):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('insert into employee(emp_id,name,department,salary) values(?,?,?,?)',
-    (emp.emp_id,emp.name,emp.department,emp.salary))
-    conn.commit()
-    conn.close
+Transactions Data
 
-def load_employees():
-     conn= connect_db()
-     cursor= conn.cursor()
-     cursor.execute("select * from employee")
-     rows= cursor.fetchall()
-     conn.close()
-     return [Employee(*row) for row in rows]
+transactions = [
+    ["T0001", 1001, "2024-07-05", "Credit", 5000.00, "Salary"],
+    ["T0002", 1001, "2024-07-12", "Debit", 1500.00, "Rent"],
+    ["T0003", 1002, "2024-06-30", "Debit", 20000.00, "Equipment purchase"],
+    ["T0004", 1003, "2024-08-01", "Credit", 2500.00, "Transfer from friend"],
+    ["T0005", 1004, "2024-08-03", "Debit", 350.00, "Grocery"],
+    ["T0006", 1005, "2024-07-20", "Credit", 10000.00, "Invoice payment received"],
+    ["T0007", 1006, "2024-08-05", "Debit", 100.00, "ATM withdrawal"],
+    ["T0008", 1002, "2024-08-02", "Credit", 5000.00, "Refund"],
+    ["T0009", 1001, "2024-08-10", "Debit", 200.00, "UPI payment"],
+    ["T0010", 1005, "2024-08-12", "Debit", 25000.00, "Vendor payment"]
+]
 
-def search_emp(empid):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('select * from employee where emp_id=?',(empid,))
-    row= cursor.fetchone()
-    conn.close
-    return Employee(*row) if row else None
-
-def delete_emp(empid):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('delete from employee where emp_id=?',(empid,))
-    conn.commit()
-    conn.close
-
-def update_emp(emp:Employee):
-    conn= connect_db()
-    cursor= conn.cursor()
-    cursor.execute('update employee set name=?,department=?,salary=? where emp_id=?',
-                   (emp.name,emp.department,emp.salary,emp.emp_id)
-                   )
-    conn.commit()
-    conn.close
-
-def read_employees() -> pd.DataFrame:
-    conn= connect_db()
-    
-    df=pd.read_sql_query("SELECT emp_id,name,department,salary from employee order by emp_id",conn)
-    conn.close()
-    return df
-
----
+transactions_columns = ["TxnID", "AccountID", "Date", "Type", "Amount", "Description"]
 
 
+Project / deliverables (what you must implement)
 
+Write a Python module (or small package) that uses pandas to read and write the workbook and implements the following functions. Use engine='openpyxl' when reading/writing Excel.
 
-from db import (create_table,insert_employee,load_employees,update_emp,search_emp,delete_emp,read_employees)
-from employee import Employee
-import logging
-from pathlib import Path
-import pandas as pd
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill,Font,Alignment
-from openpyxl.utils import get_column_letter
-import sqlite3
-from exception import EmployeeNotFoundError,InvalidInputError,DatabaseOperationError
+Core functions (required)
 
-# configuring Logs
+create_workbook_from_data(accounts_df, transactions_df, filename)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format= "%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("employee_app.log",mode="a"),
-        logging.StreamHandler()
-    ]
-)
-logger= logging.getLogger(__name__)
+Create the Excel file with the two sheets using given DataFrames. Overwrite if exists.
 
-def display_menu():
-    print("\n------ Employee DB App------")
-    print("1---- Add Employee------")
-    print("2---- load Employees------")
-    print("3---- search Employee------")
-    print("4---- delete Employee------")
-    print("5---- update Employee------")
-    print("6---- DataFrame Employee------")
-    print("7---- Exit App------")
+read_workbook(filename) → returns (accounts_df, transactions_df)
 
-def main():
-    try:
-        create_table()
-        logger.info("Database Table Created")
+Read both sheets back into DataFrames and ensure proper dtypes (dates as datetime, numeric as numeric).
 
-    except sqlite3.Error as e:
-        raise DatabaseOperationError("Error while creating table")
+get_account_statement(account_id, start_date=None, end_date=None) → DataFrame of transactions
 
-    while True:
-        try:
-            display_menu()
-            choice= input("Enter Choice to Perform Operations:  ")
-            if choice == '1':
-                try:
-                    emp_id= int(input('Enter Employee ID: '))
-                    name=input('Enter Employee Name: ')
-                    dept=input('Enter Department department: ')
-                    salary= int(input('Enter Employee Salary: '))
-                    emp= Employee(emp_id,name,dept,salary)
-                    insert_employee(emp)
-                    print('Employee Added')
-                    logger.info(f"Employee {emp_id} added into DB")
-                except ValueError:
-                    raise InvalidInputError("ID and salary must be numeric")
-                except sqlite3.Error as e:
-                    raise DatabaseOperationError("Insert Operation Failed")
-        
-            elif choice =='2':
-                try:
-                    employees= load_employees()
-                    if not employees:
-                        raise EmployeeNotFoundError("No Employee Found")
+Returns transactions for the account (filtered by optional date range), sorted by date ascending.
 
-                    for emp in employees:
-                     print(emp)
-                     logger.info(f"Loaded {len(employees)} employees from DB")
-                except sqlite3.Error as e:
-                    raise DatabaseOperationError("Load Operation Failed")
-        
-            elif choice =='3':
-                try:
-                    emp_id= int(input('Enter Employee ID to Search'))
-                    emp= search_emp(emp_id)
-                    if not emp:
-                        logger.warning(f"Employee {emp_id} not found")
-                        raise EmployeeNotFoundError("Employee ID Not found")
-                       
-                    print(emp)
-                   
-                    
-                except ValueError:
-                    raise InvalidInputError("ID must be numeric")
-                except sqlite3.Error as e:
-                    raise DatabaseOperationError("Fetch Operation Failed")
-          
-        
-            elif choice =='4':
-                try:
-                    emp_id= int(input('Enter Employee ID to Search'))
-                    delete_emp(emp_id)
-                    print('Employee deleted')
-                except ValueError:
-                    raise InvalidInputError("ID must be numeric")
-                except sqlite3.Error as e:
-                    raise DatabaseOperationError("delete Operation Failed")
-        
-            elif choice =='5':
-                try:
-                    emp_id= int(input('Enter Employee ID to update'))
-                    emp= search_emp(emp_id)
-                    if not emp:
-                         raise EmployeeNotFoundError("Employee ID Not found")
-                        
-            
-                    name=input(f'Enter new Employee Name: ({emp.name}) :)') or emp.name
+transfer_funds(from_acct, to_acct, amount, description=None, filename='bank_data.xlsx')
 
-                    dept=input(f'Enter new Department : ({emp.department}) :)') or emp.department
-                    salary_input= int(input(f"Enter new salary ({emp.salary})"))
-                    salary= float(salary_input) if salary_input else emp.salary
-                    update_emp(Employee(emp_id,name,dept,salary))
-                    print("Employee Updated")
-                
-                except ValueError:
-                    raise InvalidInputError("Salary must be numeric")
-                except sqlite3.Error as e:
-                    logger.error(f"Database Operations error")
-
-            elif choice =='6':
-                print(read_employees())
-                
-
-
-            elif choice =='7':
-                print('Exiting the App')
-                break
-            else:
-                print('Wrong Choice')
-
-        except EmployeeNotFoundError as e:
-            print('employee not found')
-        except InvalidInputError as e:
-            print('invalid input')
-        except DatabaseOperationError as e:
-            print('Database error')
-
-if __name__ == '__main__':
-    main()
+Modify in-memory DataFrames (and persist to file): create two transaction rows (debit and credit), update Balances in Accounts sheet accordingly. Validate sufficient funds for debit (unless target acct allows overdraft). Should raise an exception if invalid.
