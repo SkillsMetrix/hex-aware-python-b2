@@ -35,18 +35,18 @@ Write a Python module (or small package) that uses pandas to read and write the 
 
 Core functions (required)
 
-create_workbook_from_data(accounts_df, transactions_df, filename)
+1) create_workbook_from_data(accounts_df, transactions_df, filename)
 
-Create the Excel file with the two sheets using given DataFrames. Overwrite if exists.
+       Create the Excel file with the two sheets using given DataFrames. Overwrite if exists.
 
-read_workbook(filename) → returns (accounts_df, transactions_df)
+2) read_workbook(filename) → returns (accounts_df, transactions_df)
 
-Read both sheets back into DataFrames and ensure proper dtypes (dates as datetime, numeric as numeric).
+        Read both sheets back into DataFrames and ensure proper dtypes (dates as datetime, numeric as numeric).
 
-get_account_statement(account_id, start_date=None, end_date=None) → DataFrame of transactions
+3) get_account_statement(account_id, start_date=None, end_date=None) → DataFrame of transactions
 
-Returns transactions for the account (filtered by optional date range), sorted by date ascending.
+        Returns transactions for the account (filtered by optional date range), sorted by date ascending.
 
-transfer_funds(from_acct, to_acct, amount, description=None, filename='bank_data.xlsx')
+4) transfer_funds(from_acct, to_acct, amount, description=None, filename='bank_data.xlsx')
 
-Modify in-memory DataFrames (and persist to file): create two transaction rows (debit and credit), update Balances in Accounts sheet accordingly. Validate sufficient funds for debit (unless target acct allows overdraft). Should raise an exception if invalid.
+        Modify in-memory DataFrames (and persist to file): create two transaction rows (debit and credit), update Balances in Accounts sheet accordingly. Validate sufficient funds for debit (unless target acct allows overdraft). Should raise an         exception if invalid.
