@@ -108,4 +108,35 @@ def init_sqlite_with_dummy_data(db_path: Path) -> None:
     except sqlite3.Error as e:
                 logger.exception("Sqlite error while initializing DB: %s ",e)
                 raise
-    
+
+def export_table_to_csv(db_path: Path, csv_path:Path,table_name:str= "transactions") -> None:
+     logger.debug("exporting table %s from DB %s to CSV  %s",table_name,db_path,csv_path)
+     try:
+          with sqlite3.connect(str(db_path)) as conn:
+               df= pd.read_sql_query(f"SELECT * FROM {table_name}" ,conn)
+               if not REQUIRED_DB_COLUMNS.issubset(df.columns):
+                    missing= REQUIRED_DB_COLUMNS - set(df.columns)
+                    raise ValueError(f"MIssing required DB Columns: {missing}")
+               csv_path.parent.mkdir(parents=True,exist_ok=True)
+               df.to_csv(csv_path,index=False)
+               logger.info("Exported %d rows to %s", len(df),csv_path)
+     except Exception:
+          logger.exception("Failed to export DB Table to CSV")
+          raise
+
+
+def run():
+     try:
+        setup_logging(LOG_FILE)
+        logger.info("Starting banking ETL process")
+        init_sqlite_with_dummy_data(DB_FILE)
+
+        export_table_to_csv(DB_FILE,DB_EXPORT_CSV)
+        
+     except Exception as exc:
+        logger.exception("ETL Process Failed")
+        return 1
+
+if __name__ =='__main__':
+     exit_code= run()
+     sys.exit(exit_code)
