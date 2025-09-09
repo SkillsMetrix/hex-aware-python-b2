@@ -1,52 +1,59 @@
-Accounts Data
-
-accounts = [
-    [1001, "Ravi Kumar", "Saving", 12500.50, "Delhi", "2020-02-15"],
-    [1002, "Sneha Shah", "Current", 50250.00, "Mumbai", "2019-10-01"],
-    [1003, "Anil Verma", "Saving", 7500.00, "Bangalore", "2021-06-20"],
-    [1004, "Priya Nair", "Saving", 300.00, "Delhi", "2024-01-05"],
-    [1005, "Amit Joshi", "Current", 150000.00, "Chennai", "2018-04-12"],
-    [1006, "Leena Rao", "Saving", 0.00, "Mumbai", "2023-11-30"]
-]
-
-accounts_columns = ["AccountID", "Name", "AccountType", "Balance", "Branch", "OpeningDate"]
-
-Transactions Data
-
-transactions = [
-    ["T0001", 1001, "2024-07-05", "Credit", 5000.00, "Salary"],
-    ["T0002", 1001, "2024-07-12", "Debit", 1500.00, "Rent"],
-    ["T0003", 1002, "2024-06-30", "Debit", 20000.00, "Equipment purchase"],
-    ["T0004", 1003, "2024-08-01", "Credit", 2500.00, "Transfer from friend"],
-    ["T0005", 1004, "2024-08-03", "Debit", 350.00, "Grocery"],
-    ["T0006", 1005, "2024-07-20", "Credit", 10000.00, "Invoice payment received"],
-    ["T0007", 1006, "2024-08-05", "Debit", 100.00, "ATM withdrawal"],
-    ["T0008", 1002, "2024-08-02", "Credit", 5000.00, "Refund"],
-    ["T0009", 1001, "2024-08-10", "Debit", 200.00, "UPI payment"],
-    ["T0010", 1005, "2024-08-12", "Debit", 25000.00, "Vendor payment"]
-]
-
-transactions_columns = ["TxnID", "AccountID", "Date", "Type", "Amount", "Description"]
+"""
+- create/reads a sqlite transactions table (dummy data)
+- export table as CSV
+- Read Local Customer CSV
+- Inner joins in Acc No
 
 
-Project / deliverables (what you must implement)
+"""
 
-Write a Python module (or small package) that uses pandas to read and write the workbook and implements the following functions. Use engine='openpyxl' when reading/writing Excel.
+from pathlib import Path
+import sqlite3
+import pandas as pd
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+from typing import Dict,Tuple
 
-Core functions (required)
+# ------configuration-------
 
-1) create_workbook_from_data(accounts_df, transactions_df, filename)
+BASE_DIR= Path("temp")
+DB_FILE= BASE_DIR / "banking.db"
+DB_EXPORT_CSV= BASE_DIR / "db_export.csv"
+CUSTOMER_CSV= BASE_DIR / "custome_details.csv"
+FINAL_REPORT= BASE_DIR / "final_report.csv"
+LOG_FILE= BASE_DIR / "banking.etl.log"
 
-       Create the Excel file with the two sheets using given DataFrames. Overwrite if exists.
+CONVERSION_RATES: Dict[str,float]= {
+    "USD" : 1.0,
+    "INR": 0.012,
+    "EUR": 1.08
+}
+REQUIRED_DB_COLUMNS= {
+   "Account_Number", "Customer_Name", "Branch_Code", "Transaction_Date", "Transaction_Type", "Transaction_Amount", "Balance," "Currency", "Account_Status"
+}
+REQUIRED_CUSTOMER_COLUMNS={"Account_Number", "Customer_Email","Customer_Phone"}
 
-2) read_workbook(filename) → returns (accounts_df, transactions_df)
+#------- Loging Setup--------
 
-        Read both sheets back into DataFrames and ensure proper dtypes (dates as datetime, numeric as numeric).
+def setup_logging(log_file: Path) -> None:
+    log_file.parent.mkdir(parents= True,exist_ok=True)
+    logger=logging.getLogger()
+    logger.setLevel(logging.DEBUG)
 
-3) get_account_statement(account_id, start_date=None, end_date=None) → DataFrame of transactions
+    fmt= logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
 
-        Returns transactions for the account (filtered by optional date range), sorted by date ascending.
+    # console handler
 
-4) transfer_funds(from_acct, to_acct, amount, description=None, filename='bank_data.xlsx')
+    ch= logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(fmt)
+    logger.addHandler(ch)
 
-        Modify in-memory DataFrames (and persist to file): create two transaction rows (debit and credit), update Balances in Accounts sheet accordingly. Validate sufficient funds for debit (unless target acct allows overdraft). Should raise an         exception if invalid.
+    # Rotating File handler (DEBUG)
+    fh=RotatingFileHandler(log_file,maxBytes=5 * 1024 * 1024,backupCount=3)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(fmt)
+    logger.addFilter(fh)
+
+logger= logging.getLogger(__name__)
