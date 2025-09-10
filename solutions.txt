@@ -125,20 +125,21 @@ def export_table_to_csv(db_path: Path, csv_path:Path,table_name:str= "transactio
           raise
 
 
-def read_csv_validate(path:Path,required_columns: set) -> pd.DataFrame:
-     logger.debug('Reading csv %s',path)
-     if not path.exists():
-          msg= f"CSV file not found: {path}"
-          logger.error(msg)
-          raise FileNotFoundError(msg)
-     df= pd.read_csv(path)
-     logger.debug("Loaded %d rows from %s", len(df),path)
-     missing= required_columns - set(df.columns)
-     if missing:
-          msg= f"CSV {path} is missing required columns: {missing}"
-          logger.error(msg)
-          raise ValueError(msg)
-     return df
+def read_csv_validate(path: Path, required_columns: set) -> pd.DataFrame:
+    logger.debug("Reading CSV %s", path)
+    if not path.exists():
+        msg = f"CSV file not found: {path}"
+        logger.error(msg)
+        raise FileNotFoundError(msg)
+
+    df = pd.read_csv(path)
+    logger.debug("Loaded %d rows from %s", len(df), path)
+    missing = required_columns - set(df.columns)
+    if missing:
+        msg = f"CSV {path} is missing required columns: {missing}"
+        logger.error(msg)
+        raise ValueError(msg)
+    return df
      
 
 def run():
@@ -151,18 +152,16 @@ def run():
         export_table_to_csv(DB_FILE,DB_EXPORT_CSV)
         # step-3 read CSV from local system
         if not CUSTOMER_CSV.exists():
-             logger.info("Customer CSV not Found",CUSTOMER_CSV)
-             sample_customers=pd.DataFrame({
-                  
+            logger.info("Customer CSV not found; creating sample at %s", CUSTOMER_CSV)
+            sample_customers = pd.DataFrame({
                 'Account_Number': [1001, 1002, 1003, 1004, 1005, 1006],
                 'Customer_Email': ['john@example.com', 'alice@example.com', 'bob@example.com',
                                    'clara@example.com', 'daniel@example.com', 'extra@example.com'],
                 'Customer_Phone': ['111-111-1111', '222-222-2222', '333-333-3333',
                                    '444-444-4444', '555-555-5555', '666-666-6666']
-            
-             })
-             CUSTOMER_CSV.parent.mkdir(parents=True,exist_ok=True)
-             sample_customers.to_csv(CUSTOMER_CSV,index=False)
+            })
+            CUSTOMER_CSV.parent.mkdir(parents=True, exist_ok=True)
+            sample_customers.to_csv(CUSTOMER_CSV, index=False)
 
      except Exception as exc:
         logger.exception("ETL Process Failed")
