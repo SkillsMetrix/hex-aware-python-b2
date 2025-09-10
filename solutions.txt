@@ -194,6 +194,14 @@ def transform_and_aggregate(df_db: pd.DataFrame,df_cust:pd.DataFrame,conversion_
      logger.debug('Report shape :%s',report.shape)
      return df_active,report
 
+def save_report(report_df: pd.DataFrame,path:Path)-> None:
+     try:
+          path.parent.mkdir(parents=True,exist_ok=True)
+          report_df.to_csv(path,index=False)
+          logger.info('Report saved to %s (rows=%d)', path,len(report_df))
+     except Exception:
+          logger.exception('Failed to save report %s',path)
+          raise
           
 
      
@@ -218,6 +226,18 @@ def run():
             })
             CUSTOMER_CSV.parent.mkdir(parents=True, exist_ok=True)
             sample_customers.to_csv(CUSTOMER_CSV, index=False)
+        
+        # saved the joined report
+        joined_df,report_df= transform_and_aggregate(DB_EXPORT_CSV,CUSTOMER_CSV,CONVERSION_RATES)
+
+        joined_out= BASE_DIR /"joined_data.csv"
+        joined_df.to_csv(joined_out,index=False)
+        logger.info('Joined data saved to s%',joined_out)
+
+        save_report(report_df,FINAL_REPORT)
+        logger.info('ETL Process completed successfully')
+        return 0
+
 
      except Exception as exc:
         logger.exception("ETL Process Failed")
