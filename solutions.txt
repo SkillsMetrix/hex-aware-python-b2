@@ -228,7 +228,9 @@ def run():
             sample_customers.to_csv(CUSTOMER_CSV, index=False)
         
         # saved the joined report
-        joined_df,report_df= transform_and_aggregate(DB_EXPORT_CSV,CUSTOMER_CSV,CONVERSION_RATES)
+        df_db= read_csv_validate(DB_EXPORT_CSV,REQUIRED_DB_COLUMNS)
+        df_cust= read_csv_validate(CUSTOMER_CSV,REQUIRED_CUSTOMER_COLUMNS)
+        joined_df,report_df= transform_and_aggregate(df_db,df_cust,CONVERSION_RATES)
 
         joined_out= BASE_DIR /"joined_data.csv"
         joined_df.to_csv(joined_out,index=False)
