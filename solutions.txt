@@ -140,6 +140,62 @@ def read_csv_validate(path: Path, required_columns: set) -> pd.DataFrame:
         logger.error(msg)
         raise ValueError(msg)
     return df
+
+def transform_and_aggregate(df_db: pd.DataFrame,df_cust:pd.DataFrame,conversion_rates: Dict[str,float])-> Tuple[pd.DataFrame,pd.DataFrame]:
+     """
+     perform join,transformations,filters and aggregation
+     returns (joined_df, report_df)
+     """
+     logger.info("Joining DB and customer data and Account_no")
+     df= pd.merge(df_db,df_cust,on="Account_Number",how="inner",validate="one_to_one")
+     logger.debug("Joined DF shape: %s", df.shape)
+
+     # standardize name
+     logger.debug("Standardize Customer_name")
+     df['Customer_Name'] = df['Customer_Name'].astype(str).str.title()
+
+     # Transaction date -> datetime, extract year/month
+
+     logger.debug("Parsing Transaction_Date and extracting year/month")
+     df['Transaction_Date']=pd.to_datetime(df['Transaction_Date'],errors='coerce')
+     df['Transaction_Year']=df['Transaction_Date'].dt.year
+     df['Transaction_Month']=df['Transaction_Date'].dt.strftime('%b')
+
+     # currency normalization
+     logger.debug('Normalizing currency to uppercase')
+     df['Currency']=df['Currency'].astype(str).str.upper()
+
+     # filter out closed accounts
+     logger.info('Filtering out accounts with Account_Status ==Closed')
+     df_active=df[df['Account_Status'].str.strip().str.upper() != 'CLOSED'].copy()
+     logger.debug('Active DF Shape: %s',df_active.shape)
+
+     # convert to USD
+     def conver_to_usd(row):
+          cur=str(row['Currency']).upper()
+          rate= conversion_rates.get(cur)
+          if rate is None:
+               logger.warning('unknown currency')
+               rate=1.0
+          return row['Transaction_Amount'] * rate
+     logger.debug('calculating Transaction_Amount_USD')
+     df_active['Transaction_Amount_USD']=df_active.apply(conver_to_usd,axis=1)
+
+     #Aggregation
+
+     logger.info('Aggregation by branch_code')
+     report=(
+          df_active.groupby(['Branch_Code','Transaction_Type'],dropna=False)
+          .agg(
+               Transaction_Count=('Transaction_Amount','count'),
+               Total_Amount_USD=('Transaction_Amount_USD','sum')
+          ).reset_index()
+     )
+     logger.debug('Report shape :%s',report.shape)
+     return df_active,report
+
+          
+
      
 
 def run():
